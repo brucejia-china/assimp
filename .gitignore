@@ -32,3 +32,8 @@ test/results
 
 # Python
 __pycache__
+*.tlog
+lib/
+obj/
+*.opensdf
+*.sdf
