@@ -167,7 +167,13 @@ DefaultIOSystem::~DefaultIOSystem()
 
 // maximum path length
 // XXX http://insanecoding.blogspot.com/2007/11/pathmax-simply-isnt.html 
-#ifdef PATH_MAX
+#ifdef WIN32 
+    // On Windows systems, ignore PATH_MAX. This makes it possible to support long paths
+    // with AssImp just by converting them to extended path form such as "\\?\D:\very long path"
+    // before passing to AssImp.
+    // See: http://msdn.microsoft.com/en-us/library/windows/desktop/aa365247%28v=vs.85%29.aspx
+#   define PATHLIMIT 8192
+#elif defined(PATH_MAX)
 #	define PATHLIMIT PATH_MAX
 #else
 #	define PATHLIMIT 4096
@@ -200,7 +206,14 @@ IOStream* DefaultIOSystem::Open( const char* strFile, const char* strMode)
 	ai_assert(NULL != strFile);
 	ai_assert(NULL != strMode);
 
+#ifdef WIN32
+    wchar_t pFileW[PATHLIMIT];
+    DecodeUTF8(strFile, strlen(strFile), pFileW, PATHLIMIT);
+    
+    FILE* file = ::_wfopen(pFileW, L"rb");
+#else
 	FILE* file = ::fopen( strFile, strMode);
+#endif 
 	if( NULL == file) 
 		return NULL;
 
