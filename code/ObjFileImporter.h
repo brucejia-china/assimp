@@ -103,6 +103,7 @@ private:
 
 	//!	\brief	Material creation.
 	void createMaterials(const ObjFile::Model* pModel, aiScene* pScene);
+	void addTextureMappingModeProperty(aiMaterial* mat, aiTextureType type, int clampMode = 1);
 
 	//!	\brief	Appends a child node to a parentnode and updates the datastructures.
 	void appendChildToParentNode(aiNode *pParent, aiNode *pChild);
