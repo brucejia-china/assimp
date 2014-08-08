@@ -167,10 +167,6 @@ struct Material
 		TextureDiffuseType = 0,
 		TextureSpecularType,
 		TextureAmbientType,
-<<<<<<< HEAD
-=======
-		TextureEmissiveType,
->>>>>>> 9f795c64d5cec9c8bed37cf7337f4a253371fc42
 		TextureBumpType,
 		TextureNormalType,
 		TextureSpecularityType,
