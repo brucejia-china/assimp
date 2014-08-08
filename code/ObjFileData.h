@@ -156,6 +156,7 @@ struct Material
 	aiString texture;
 	aiString textureSpecular;
 	aiString textureAmbient;
+	aiString textureEmissive;
 	aiString textureBump;
 	aiString textureNormal;
 	aiString textureSpecularity;
@@ -166,6 +167,10 @@ struct Material
 		TextureDiffuseType = 0,
 		TextureSpecularType,
 		TextureAmbientType,
+<<<<<<< HEAD
+=======
+		TextureEmissiveType,
+>>>>>>> 9f795c64d5cec9c8bed37cf7337f4a253371fc42
 		TextureBumpType,
 		TextureNormalType,
 		TextureSpecularityType,
@@ -181,6 +186,8 @@ struct Material
 	aiColor3D diffuse;
 	//!	Specular color
 	aiColor3D specular;
+	//!	Emissive color
+	aiColor3D emissive;
 	//!	Alpha value
 	float alpha;
 	//!	Shineness factor
@@ -286,7 +293,7 @@ struct Model
 	//!	Active group
 	std::string m_strActiveGroup;
 	//!	Vector with generated texture coordinates
-	std::vector<aiVector2D> m_TextureCoord;
+	std::vector<aiVector3D> m_TextureCoord;
 	//!	Current mesh instance
 	Mesh *m_pCurrentMesh;
 	//!	Vector with stored meshes
@@ -294,7 +301,7 @@ struct Model
 	//!	Material map
 	std::map<std::string, Material*> m_MaterialMap;
 
-	//!	\brief	Default constructor
+	//!	\brief	The default class constructor
 	Model() :
 		m_ModelName(""),
 		m_pCurrent(NULL),
@@ -307,7 +314,7 @@ struct Model
 		// empty
 	}
 	
-	//!	\brief	Destructor
+	//!	\brief	The class destructor
 	~Model()
 	{
 		// Clear all stored object instances

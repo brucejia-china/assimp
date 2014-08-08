@@ -1492,6 +1492,13 @@ void ColladaParser::ReadGeometryLibrary()
 				// create a mesh and store it in the library under its ID
 				Mesh* mesh = new Mesh;
 				mMeshLibrary[id] = mesh;
+                
+                // read the mesh name if it exists
+                const int nameIndex = TestAttribute("name");
+                if(nameIndex != -1)
+                {
+                    mesh->mName = mReader->getAttributeValue(nameIndex);
+                }
 
 				// read on from there
 				ReadGeometry( mesh);
@@ -1653,7 +1660,6 @@ void ColladaParser::ReadDataArray()
 	std::string id = mReader->getAttributeValue( indexID);
 	int indexCount = GetAttribute( "count");
 	unsigned int count = (unsigned int) mReader->getAttributeValueAsInt( indexCount);
-	if (count == 0) { return; } // some exporters write empty data arrays with count="0"
 	const char* content = TestTextContent();
 
   // read values and store inside an array in the data library

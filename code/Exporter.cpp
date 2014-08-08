@@ -71,12 +71,15 @@ void GetPostProcessingStepInstanceList(std::vector< BaseProcess* >& out);
 
 // ------------------------------------------------------------------------------------------------
 // Exporter worker function prototypes. Should not be necessary to #ifndef them, it's just a prototype
+// do not use const, because some exporter need to convert the scene temporary
 void ExportSceneCollada(const char*,IOSystem*, const aiScene*);
+void ExportSceneXFile(const char*,IOSystem*, const aiScene*); 
 void ExportSceneObj(const char*,IOSystem*, const aiScene*);
 void ExportSceneSTL(const char*,IOSystem*, const aiScene*);
 void ExportSceneSTLBinary(const char*,IOSystem*, const aiScene*);
 void ExportScenePly(const char*,IOSystem*, const aiScene*);
-void ExportScene3DS(const char*, IOSystem*, const aiScene*) {}
+void ExportScene3DS(const char*, IOSystem*, const aiScene*);
+void ExportSceneAssbin(const char*, IOSystem*, const aiScene*);
 
 // ------------------------------------------------------------------------------------------------
 // global array of all export formats which Assimp supports in its current build
@@ -86,16 +89,21 @@ Exporter::ExportFormatEntry gExporters[] =
 	Exporter::ExportFormatEntry( "collada", "COLLADA - Digital Asset Exchange Schema", "dae", &ExportSceneCollada),
 #endif
 
+#ifndef ASSIMP_BUILD_NO_FXILE_EXPORTER
+	Exporter::ExportFormatEntry( "x", "X Files", "x", &ExportSceneXFile,
+		aiProcess_MakeLeftHanded | aiProcess_FlipWindingOrder | aiProcess_FlipUVs),
+#endif
+
 #ifndef ASSIMP_BUILD_NO_OBJ_EXPORTER
 	Exporter::ExportFormatEntry( "obj", "Wavefront OBJ format", "obj", &ExportSceneObj, 
-		aiProcess_GenNormals /*| aiProcess_PreTransformVertices */),
+		aiProcess_GenSmoothNormals /*| aiProcess_PreTransformVertices */),
 #endif
 
 #ifndef ASSIMP_BUILD_NO_STL_EXPORTER
 	Exporter::ExportFormatEntry( "stl", "Stereolithography", "stl" , &ExportSceneSTL, 
 		aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_PreTransformVertices
 	),
-	Exporter::ExportFormatEntry( "stlb", "Stereolithography(binary)", "stlb" , &ExportSceneSTLBinary, 
+	Exporter::ExportFormatEntry( "stlb", "Stereolithography (binary)", "stl" , &ExportSceneSTLBinary, 
 		aiProcess_Triangulate | aiProcess_GenNormals | aiProcess_PreTransformVertices
 	),
 #endif
@@ -106,9 +114,14 @@ Exporter::ExportFormatEntry gExporters[] =
 	),
 #endif
 
-//#ifndef ASSIMP_BUILD_NO_3DS_EXPORTER
-//	ExportFormatEntry( "3ds", "Autodesk 3DS (legacy format)", "3ds" , &ExportScene3DS),
-//#endif
+#ifndef ASSIMP_BUILD_NO_3DS_EXPORTER
+	Exporter::ExportFormatEntry( "3ds", "Autodesk 3DS (legacy)", "3ds" , &ExportScene3DS,
+		aiProcess_Triangulate | aiProcess_SortByPType | aiProcess_JoinIdenticalVertices),
+#endif
+
+#ifndef ASSIMP_BUILD_NO_ASSBIN_EXPORTER
+	Exporter::ExportFormatEntry( "assbin", "Assimp Binary", "assbin" , &ExportSceneAssbin, NULL),
+#endif
 };
 
 #define ASSIMP_NUM_EXPORTERS (sizeof(gExporters)/sizeof(gExporters[0]))
@@ -176,6 +189,8 @@ Exporter :: Exporter()
 Exporter :: ~Exporter()
 {
 	FreeBlob();
+
+	delete pimpl;
 }
 
 
@@ -202,7 +217,7 @@ bool Exporter :: IsDefaultIOHandler() const
 
 
 // ------------------------------------------------------------------------------------------------
-const aiExportDataBlob* Exporter :: ExportToBlob(  const aiScene* pScene, const char* pFormatId, unsigned int pPreprocessing )
+const aiExportDataBlob* Exporter :: ExportToBlob(  const aiScene* pScene, const char* pFormatId, unsigned int )
 {
 	if (pimpl->blob) {
 		delete pimpl->blob;
@@ -228,9 +243,45 @@ const aiExportDataBlob* Exporter :: ExportToBlob(  const aiScene* pScene, const 
 
 
 // ------------------------------------------------------------------------------------------------
+bool IsVerboseFormat(const aiMesh* mesh) 
+{
+	// avoid slow vector<bool> specialization
+	std::vector<unsigned int> seen(mesh->mNumVertices,0);
+	for(unsigned int i = 0; i < mesh->mNumFaces; ++i) {
+		const aiFace& f = mesh->mFaces[i];
+		for(unsigned int j = 0; j < f.mNumIndices; ++j) {
+			if(++seen[f.mIndices[j]] == 2) {
+				// found a duplicate index
+				return false;
+			}
+		}
+	}
+	return true;
+}
+
+
+// ------------------------------------------------------------------------------------------------
+bool IsVerboseFormat(const aiScene* pScene) 
+{
+	for(unsigned int i = 0; i < pScene->mNumMeshes; ++i) {
+		if(!IsVerboseFormat(pScene->mMeshes[i])) {
+			return false;
+		}
+	}
+	return true;
+}
+
+
+// ------------------------------------------------------------------------------------------------
 aiReturn Exporter :: Export( const aiScene* pScene, const char* pFormatId, const char* pPath, unsigned int pPreprocessing )
 {
 	ASSIMP_BEGIN_EXCEPTION_REGION();
+
+	// when they create scenes from scratch, users will likely create them not in verbose
+	// format. They will likely not be aware that there is a flag in the scene to indicate
+	// this, however. To avoid surprises and bug reports, we check for duplicates in
+	// meshes upfront.
+	const bool is_verbose_format = !(pScene->mFlags & AI_SCENE_FLAGS_NON_VERBOSE_FORMAT) || IsVerboseFormat(pScene);
 
 	pimpl->mError = "";
 	for (size_t i = 0; i < pimpl->mExporters.size(); ++i) {
@@ -253,20 +304,21 @@ aiReturn Exporter :: Export( const aiScene* pScene, const char* pFormatId, const
 				const unsigned int nonIdempotentSteps = aiProcess_FlipWindingOrder | aiProcess_FlipUVs | aiProcess_MakeLeftHanded;
 
 				// Erase all pp steps that were already applied to this scene
-				unsigned int pp = (exp.mEnforcePP | pPreprocessing) & ~(priv 
+				const unsigned int pp = (exp.mEnforcePP | pPreprocessing) & ~(priv && !priv->mIsCopy
 					? (priv->mPPStepsApplied & ~nonIdempotentSteps)
 					: 0u);
 
 				// If no extra postprocessing was specified, and we obtained this scene from an
 				// Assimp importer, apply the reverse steps automatically.
-				if (!pPreprocessing && priv) {
-					pp |= (nonIdempotentSteps & priv->mPPStepsApplied);
-				}
+				// TODO: either drop this, or document it. Otherwise it is just a bad surprise.
+				//if (!pPreprocessing && priv) {
+				//	pp |= (nonIdempotentSteps & priv->mPPStepsApplied);
+				//}
 
 				// If the input scene is not in verbose format, but there is at least postprocessing step that relies on it,
 				// we need to run the MakeVerboseFormat step first.
 				bool must_join_again = false;
-				if (scenecopy->mFlags & AI_SCENE_FLAGS_NON_VERBOSE_FORMAT) {
+				if (!is_verbose_format) {
 					
 					bool verbosify = false;
 					for( unsigned int a = 0; a < pimpl->mPostProcessingSteps.size(); a++) {
@@ -396,6 +448,11 @@ const aiExportFormatDesc* Exporter :: GetExportFormatDescription( size_t pIndex 
 {
 	if (pIndex >= GetExportFormatCount()) {
 		return NULL;
+	}
+	
+	// Return from static storage if the requested index is built-in.
+	if (pIndex < sizeof(gExporters) / sizeof(gExporters[0])) {
+		return &gExporters[pIndex].mDescription;
 	}
 
 	return &pimpl->mExporters[pIndex].mDescription;

@@ -41,7 +41,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "stdafx.h"
 #include "assimp_view.h"
-#include <Windowsx.h>
+#include <windowsx.h>
 
 namespace AssimpView {
 
@@ -95,16 +95,16 @@ void MakeFileAssociations()
 		ai_assert(sz[0] == '*');
 		sprintf(buf,"Software\\Classes\\%s",sz+1);
 
-		RegCreateKeyEx(HKEY_CURRENT_USER,buf,NULL,NULL,0,KEY_ALL_ACCESS, NULL, &g_hRegistry,NULL);
+		RegCreateKeyEx(HKEY_CURRENT_USER,buf,0,NULL,0,KEY_ALL_ACCESS, NULL, &g_hRegistry,NULL);
 		RegSetValueEx(g_hRegistry,"",0,REG_SZ,(const BYTE*)"ASSIMPVIEW_CLASS",(DWORD)strlen("ASSIMPVIEW_CLASS")+1);
 		RegCloseKey(g_hRegistry);
 	}
-	while (sz = strtok(NULL,";"));
+	while ((sz = strtok(NULL,";")));
 
-	RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\Classes\\ASSIMPVIEW_CLASS",NULL,NULL,0,KEY_ALL_ACCESS, NULL, &g_hRegistry,NULL);
+	RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\Classes\\ASSIMPVIEW_CLASS",0,NULL,0,KEY_ALL_ACCESS, NULL, &g_hRegistry,NULL);
 	RegCloseKey(g_hRegistry);
 
-	RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\Classes\\ASSIMPVIEW_CLASS\\shell\\open\\command",NULL,NULL,0,KEY_ALL_ACCESS, NULL, &g_hRegistry,NULL);
+	RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\Classes\\ASSIMPVIEW_CLASS\\shell\\open\\command",0,NULL,0,KEY_ALL_ACCESS, NULL, &g_hRegistry,NULL);
 	RegSetValueEx(g_hRegistry,"",0,REG_SZ,(const BYTE*)szTemp,(DWORD)strlen(szTemp)+1);
 	RegCloseKey(g_hRegistry);
 
@@ -522,7 +522,7 @@ void DisplayColorDialog(D3DCOLOR* pclrResult)
 	clr.lpCustColors = g_aclCustomColors;
 	clr.lpfnHook = NULL;
 	clr.lpTemplateName = NULL;
-	clr.lCustData = NULL;
+	clr.lCustData = 0;
 
 	ChooseColor(&clr);
 
@@ -549,7 +549,7 @@ void DisplayColorDialog(D3DXVECTOR4* pclrResult)
 	clr.lpCustColors = g_aclCustomColors;
 	clr.lpfnHook = NULL;
 	clr.lpTemplateName = NULL;
-	clr.lCustData = NULL;
+	clr.lCustData = 0;
 
 	ChooseColor(&clr);
 
@@ -1030,38 +1030,45 @@ void PopulateExportMenu()
 //-------------------------------------------------------------------------------
 void DoExport(size_t formatId)
 {
-	if (!g_szFileName) {
+	if (!g_szFileName[0]) {
+		MessageBox(g_hDlg, "No model loaded", "Export", MB_ICONERROR);
 		return;
 	}
-
 	Exporter exp;
 	const aiExportFormatDesc* const e = exp.GetExportFormatDescription(formatId);
 	ai_assert(e);
 
 	char szFileName[MAX_PATH*2];
-	DWORD dwTemp;
-	if(ERROR_SUCCESS == RegQueryValueEx(g_hRegistry,"ModelExportDest",NULL,NULL,(BYTE*)szFileName,&dwTemp)) {
+	DWORD dwTemp = sizeof(szFileName);
+	if(ERROR_SUCCESS == RegQueryValueEx(g_hRegistry,"ModelExportDest",NULL,NULL,(BYTE*)szFileName, &dwTemp)) {
+		ai_assert(strlen(szFileName) <= MAX_PATH);
+
 		// invent a nice default file name 
 		char* sz = std::max(strrchr(szFileName,'\\'),strrchr(szFileName,'/'));
 		if (sz) {
-			strcpy(sz,std::max(strrchr(g_szFileName,'\\'),strrchr(g_szFileName,'/')));
+			strncpy(sz,std::max(strrchr(g_szFileName,'\\'),strrchr(g_szFileName,'/')),MAX_PATH);
 		}
 	}
 	else {
 		// Key was not found. Use the folder where the asset comes from
-		strcpy(szFileName,g_szFileName);
+		strncpy(szFileName,g_szFileName,MAX_PATH);
 	}
 
 	// fix file extension
 	{	char * const sz = strrchr(szFileName,'.');
-		if(sz) strcpy(sz+1,e->fileExtension);
+		if(sz) {
+			ai_assert((sz - &szFileName[0]) + strlen(e->fileExtension) + 1 <= MAX_PATH);
+			strcpy(sz+1,e->fileExtension);
+		}
 	}
 
 	// build the stupid info string for GetSaveFileName() - can't use sprintf() because the string must contain binary zeros.
 	char desc[256] = {0};
 	char* c = strcpy(desc,e->description) + strlen(e->description)+1;
 	c += sprintf(c,"*.%s",e->fileExtension)+1;
-	strcpy(c, "*.*\0");
+	strcpy(c, "*.*\0"); c += 4; 
+
+	ai_assert(c - &desc[0] <= 256);
 
 	const std::string ext = "."+std::string(e->fileExtension);
 	OPENFILENAME sFilename1 = {
@@ -1084,7 +1091,15 @@ void DoExport(size_t formatId)
 	}
 
 	// export the file
-	const aiReturn res = exp.Export(g_pcAsset->pcScene,e->id,sFinal.c_str());
+	const aiReturn res = exp.Export(g_pcAsset->pcScene,e->id,sFinal.c_str(),
+		ppsteps | /* configurable pp steps */
+		aiProcess_GenSmoothNormals		   | // generate smooth normal vectors if not existing
+		aiProcess_SplitLargeMeshes         | // split large, unrenderable meshes into submeshes
+		aiProcess_Triangulate			   | // triangulate polygons with more than 3 edges
+		aiProcess_ConvertToLeftHanded	   | // convert everything to D3D left handed space
+		aiProcess_SortByPType              | // make 'clean' meshes which consist of a single typ of primitives
+		0
+	);
 	if (res == aiReturn_SUCCESS) {
 		CLogDisplay::Instance().AddEntry("[INFO] Exported file " + sFinal,D3DCOLOR_ARGB(0xFF,0x00,0xFF,0x00));
 		return;
@@ -1120,7 +1135,7 @@ void InitUI()
 
 	// store the key in a global variable for later use
 	RegCreateKeyEx(HKEY_CURRENT_USER,"Software\\ASSIMP\\Viewer",
-		NULL,NULL,0,KEY_ALL_ACCESS, NULL, &g_hRegistry,NULL);
+		0,NULL,0,KEY_ALL_ACCESS, NULL, &g_hRegistry,NULL);
 
 	if(ERROR_SUCCESS != RegQueryValueEx(g_hRegistry,"LastUIState",NULL,NULL,
 		(BYTE*)&dwValue,&dwTemp))
@@ -2411,7 +2426,7 @@ int APIENTRY _tWinMain(HINSTANCE hInstance,
 		};
 	DWORD dwTemp = MAX_PATH;
 	RegCreateKeyEx(HKEY_CURRENT_USER,
-		"Software\\ASSIMP\\Viewer",NULL,NULL,0,KEY_ALL_ACCESS, NULL, &g_hRegistry,NULL);
+		"Software\\ASSIMP\\Viewer",0,NULL,0,KEY_ALL_ACCESS, NULL, &g_hRegistry,NULL);
 	if(ERROR_SUCCESS == RegQueryValueEx(g_hRegistry,"LastSkyBoxSrc",NULL,NULL,
 		(BYTE*)szFileName,&dwTemp) && '\0' != szFileName[0])
 		{

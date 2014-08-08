@@ -133,6 +133,7 @@ void ColladaLoader::InternReadFile( const std::string& pFile, aiScene* pScene, I
 	mLights.clear();
 	mCameras.clear();
 	mTextures.clear();
+	mAnims.clear();
 
 	// parse the input file
 	ColladaParser parser( pIOHandler, pFile);
@@ -522,7 +523,10 @@ void ColladaLoader::BuildMeshesForNode( const ColladaParser& pParser, const Coll
 
 				// assign the material index
 				dstMesh->mMaterialIndex = matIdx;
-        dstMesh->mName = mid.mMeshOrController;			
+                if(dstMesh->mName.length == 0)
+                {
+                    dstMesh->mName = mid.mMeshOrController;
+                }
       }
 		}
 	}
@@ -542,6 +546,8 @@ aiMesh* ColladaLoader::CreateMesh( const ColladaParser& pParser, const Collada::
 	const Collada::Controller* pSrcController, size_t pStartVertex, size_t pStartFace)
 {
 	aiMesh* dstMesh = new aiMesh;
+    
+    dstMesh->mName = pSrcMesh->mName;
 
 	// count the vertices addressed by its faces
 	const size_t numVertices = std::accumulate( pSrcMesh->mFaceSize.begin() + pStartFace,
@@ -900,6 +906,8 @@ void ColladaLoader::StoreAnimations( aiScene* pScene, const ColladaParser& pPars
 		pScene->mAnimations = new aiAnimation*[mAnims.size()];
 		std::copy( mAnims.begin(), mAnims.end(), pScene->mAnimations);
 	}
+
+	mAnims.clear();
 }
 
 // ------------------------------------------------------------------------------------------------

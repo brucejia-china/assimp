@@ -54,6 +54,7 @@ static const std::string DiffuseTexture      = "map_kd";
 static const std::string AmbientTexture      = "map_ka";
 static const std::string SpecularTexture     = "map_ks";
 static const std::string OpacityTexture      = "map_d";
+static const std::string EmmissiveTexture    = "map_emissive";
 static const std::string BumpTexture1        = "map_bump";
 static const std::string BumpTexture2        = "map_Bump";
 static const std::string BumpTexture3        = "bump";
@@ -128,6 +129,7 @@ void ObjFileMtlImporter::load()
 	{
 		switch (*m_DataIt)
 		{
+		case 'k':
 		case 'K':
 			{
 				++m_DataIt;
@@ -145,6 +147,11 @@ void ObjFileMtlImporter::load()
 				{
 					++m_DataIt;
 					getColorRGBA( &m_pModel->m_pCurrentMaterial->specular );
+				}
+				else if (*m_DataIt == 'e')
+				{
+					++m_DataIt;
+					getColorRGBA( &m_pModel->m_pCurrentMaterial->emissive );
 				}
 				m_DataIt = skipLine<DataArrayIt>( m_DataIt, m_DataItEnd, m_uiLine );
 			}
@@ -298,10 +305,17 @@ void ObjFileMtlImporter::getTexture() {
 		// Opacity texture
 		out = & m_pModel->m_pCurrentMaterial->textureOpacity;
 		clampIndex = ObjFile::Material::TextureOpacityType;
+<<<<<<< HEAD
 	} else if (!ASSIMP_strincmp( pPtr,"map_ka",6)) {
 		// Ambient texture
 		out = & m_pModel->m_pCurrentMaterial->textureAmbient;
 		clampIndex = ObjFile::Material::TextureAmbientType;
+=======
+	} else if (!ASSIMP_strincmp( pPtr, EmmissiveTexture.c_str(), EmmissiveTexture.size())) {
+		// Emissive texture
+		out = & m_pModel->m_pCurrentMaterial->textureEmissive;
+		clampIndex = ObjFile::Material::TextureEmissiveType;
+>>>>>>> 9f795c64d5cec9c8bed37cf7337f4a253371fc42
 	} else if ( !ASSIMP_strincmp( pPtr, BumpTexture1.c_str(), BumpTexture1.size() ) ||
 		        !ASSIMP_strincmp( pPtr, BumpTexture2.c_str(), BumpTexture2.size() ) || 
 		        !ASSIMP_strincmp( pPtr, BumpTexture3.c_str(), BumpTexture3.size() ) ) {

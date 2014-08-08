@@ -27,10 +27,16 @@ if os.name=='posix':
     # currently there's always a symlink called
     # libassimp.so in /usr/local/lib.
     ext_whitelist.append('.so')
+    # libassimp.dylib in /usr/local/lib
+    ext_whitelist.append('.dylib')
 
 elif os.name=='nt':
     ext_whitelist.append('.dll')
-
+    path_dirs = os.environ['PATH'].split(';')
+    for dir_candidate in path_dirs:
+        if 'assimp' in dir_candidate.lower():
+            additional_dirs.append(dir_candidate)
+            
 #print(additional_dirs)
 def vec2tuple(x):
     """ Converts a VECTOR3D to a Tuple """

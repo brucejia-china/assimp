@@ -294,7 +294,7 @@ void LWOImporter::InternReadFile( const std::string& pFile,
 				unsigned int vUVChannelIndices[AI_MAX_NUMBER_OF_TEXTURECOORDS];
 				unsigned int vVColorIndices[AI_MAX_NUMBER_OF_COLOR_SETS];
 
-#if _DEBUG
+#ifdef ASSIMP_BUILD_DEBUG
 				for (unsigned int mui = 0; mui < AI_MAX_NUMBER_OF_TEXTURECOORDS;++mui ) {
 					vUVChannelIndices[mui] = UINT_MAX;
 				}
@@ -1295,6 +1295,11 @@ void LWOImporter::LoadLWO2File()
 		}
 		uint8_t* const next = mFileBuffer+head->length;
 		unsigned int iUnnamed = 0;
+
+		if(!head->length) {
+			mFileBuffer = next;
+			continue;
+		}
 
 		switch (head->type)
 		{
