@@ -1,0 +1,48 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "assimp", "code\assimp.vcxproj", "{41A3A272-8A66-4352-9ADB-D55E058831C7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{467E44BE-B9CB-4613-B436-4AECA23638BD} = {467E44BE-B9CB-4613-B436-4AECA23638BD}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlibstatic", "contrib\zlib\zlibstatic.vcxproj", "{467E44BE-B9CB-4613-B436-4AECA23638BD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		debug-noboost-dll|x64 = debug-noboost-dll|x64
+		MinSizeRel|x64 = MinSizeRel|x64
+		Release|x64 = Release|x64
+		release-noboost-dll|x64 = release-noboost-dll|x64
+		RelWithDebInfo|x64 = RelWithDebInfo|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{41A3A272-8A66-4352-9ADB-D55E058831C7}.Debug|x64.ActiveCfg = Debug|x64
+		{41A3A272-8A66-4352-9ADB-D55E058831C7}.Debug|x64.Build.0 = Debug|x64
+		{41A3A272-8A66-4352-9ADB-D55E058831C7}.debug-noboost-dll|x64.ActiveCfg = debug-noboost-dll|x64
+		{41A3A272-8A66-4352-9ADB-D55E058831C7}.debug-noboost-dll|x64.Build.0 = debug-noboost-dll|x64
+		{41A3A272-8A66-4352-9ADB-D55E058831C7}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
+		{41A3A272-8A66-4352-9ADB-D55E058831C7}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
+		{41A3A272-8A66-4352-9ADB-D55E058831C7}.Release|x64.ActiveCfg = Release|x64
+		{41A3A272-8A66-4352-9ADB-D55E058831C7}.Release|x64.Build.0 = Release|x64
+		{41A3A272-8A66-4352-9ADB-D55E058831C7}.release-noboost-dll|x64.ActiveCfg = release-noboost-dll|x64
+		{41A3A272-8A66-4352-9ADB-D55E058831C7}.release-noboost-dll|x64.Build.0 = release-noboost-dll|x64
+		{41A3A272-8A66-4352-9ADB-D55E058831C7}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{41A3A272-8A66-4352-9ADB-D55E058831C7}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+		{467E44BE-B9CB-4613-B436-4AECA23638BD}.Debug|x64.ActiveCfg = Debug|x64
+		{467E44BE-B9CB-4613-B436-4AECA23638BD}.Debug|x64.Build.0 = Debug|x64
+		{467E44BE-B9CB-4613-B436-4AECA23638BD}.debug-noboost-dll|x64.ActiveCfg = debug-noboost-dll|x64
+		{467E44BE-B9CB-4613-B436-4AECA23638BD}.debug-noboost-dll|x64.Build.0 = debug-noboost-dll|x64
+		{467E44BE-B9CB-4613-B436-4AECA23638BD}.MinSizeRel|x64.ActiveCfg = MinSizeRel|x64
+		{467E44BE-B9CB-4613-B436-4AECA23638BD}.MinSizeRel|x64.Build.0 = MinSizeRel|x64
+		{467E44BE-B9CB-4613-B436-4AECA23638BD}.Release|x64.ActiveCfg = Release|x64
+		{467E44BE-B9CB-4613-B436-4AECA23638BD}.Release|x64.Build.0 = Release|x64
+		{467E44BE-B9CB-4613-B436-4AECA23638BD}.release-noboost-dll|x64.ActiveCfg = release-noboost-dll|x64
+		{467E44BE-B9CB-4613-B436-4AECA23638BD}.release-noboost-dll|x64.Build.0 = release-noboost-dll|x64
+		{467E44BE-B9CB-4613-B436-4AECA23638BD}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
+		{467E44BE-B9CB-4613-B436-4AECA23638BD}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

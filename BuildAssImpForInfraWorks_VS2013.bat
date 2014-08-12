@@ -10,9 +10,9 @@ Set DevEnvDir=%VS120COMNTOOLS%\..\IDE
 
 if not exist "%DevEnvDir%\devenv.com" GOTO :ERROR_DONE
 
-"%DevEnvDir%\devenv.com" workspaces\vc11\assimp.sln /upgrade
-"%DevEnvDir%\devenv.com" workspaces\vc11\assimp.sln /project assimp /build "debug-noboost-dll|x64"
-"%DevEnvDir%\devenv.com" workspaces\vc11\assimp.sln /project assimp /build "release-noboost-dll|x64"
+"%DevEnvDir%\devenv.com" workspaces\vc114AssImp311\assimp.sln /upgrade
+"%DevEnvDir%\devenv.com" workspaces\vc114AssImp311\assimp.sln /project assimp /build "debug-noboost-dll|x64"
+"%DevEnvDir%\devenv.com" workspaces\vc114AssImp311\assimp.sln /project assimp /build "release-noboost-dll|x64"
 
 GOTO :EOF
 

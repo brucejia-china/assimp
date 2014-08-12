@@ -4,3 +4,6 @@ lib/
 obj/
 *.opensdf
 *.sdf
+bin
+obj
+lib
