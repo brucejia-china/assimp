@@ -1,8 +1,5 @@
 build
-<<<<<<< HEAD
 *.tlog
-lib/
-obj/
 *.opensdf
 *.sdf
 =======
@@ -17,6 +14,7 @@ obj/
 # Output
 bin/
 lib/
+obj/
 contrib/
 
 # Generated
@@ -39,4 +37,3 @@ test/results
 
 # Python
 __pycache__
->>>>>>> 9f795c64d5cec9c8bed37cf7337f4a253371fc42

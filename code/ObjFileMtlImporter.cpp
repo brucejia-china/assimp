@@ -305,17 +305,10 @@ void ObjFileMtlImporter::getTexture() {
 		// Opacity texture
 		out = & m_pModel->m_pCurrentMaterial->textureOpacity;
 		clampIndex = ObjFile::Material::TextureOpacityType;
-<<<<<<< HEAD
 	} else if (!ASSIMP_strincmp( pPtr,"map_ka",6)) {
 		// Ambient texture
 		out = & m_pModel->m_pCurrentMaterial->textureAmbient;
 		clampIndex = ObjFile::Material::TextureAmbientType;
-=======
-	} else if (!ASSIMP_strincmp( pPtr, EmmissiveTexture.c_str(), EmmissiveTexture.size())) {
-		// Emissive texture
-		out = & m_pModel->m_pCurrentMaterial->textureEmissive;
-		clampIndex = ObjFile::Material::TextureEmissiveType;
->>>>>>> 9f795c64d5cec9c8bed37cf7337f4a253371fc42
 	} else if ( !ASSIMP_strincmp( pPtr, BumpTexture1.c_str(), BumpTexture1.size() ) ||
 		        !ASSIMP_strincmp( pPtr, BumpTexture2.c_str(), BumpTexture2.size() ) || 
 		        !ASSIMP_strincmp( pPtr, BumpTexture3.c_str(), BumpTexture3.size() ) ) {
