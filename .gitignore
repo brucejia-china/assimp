@@ -7,9 +7,8 @@ build
 *.kdev4*
 
 # Visual Studio
-*.sln
 *.ncb
-*.vcproj
+*.suo
 
 # Output
 bin/
