@@ -298,7 +298,7 @@ void Discreet3DSExporter::WriteMaterials()
 		if (mat.Get(AI_MATKEY_SHADING_MODEL, shading_mode) == AI_SUCCESS) {
 			ChunkWriter chunk(writer, Discreet3DS::CHUNK_MAT_SHADING);
 
-			Discreet3DS::shadetype3ds shading_mode_out;
+			Discreet3DS::shadetype3ds shading_mode_out = Discreet3DS::Flat;
 			switch(shading_mode) {
 			case aiShadingMode_Flat:
 			case aiShadingMode_NoShading:
