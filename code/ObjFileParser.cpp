@@ -241,7 +241,7 @@ void ObjFileParser::getVector( std::vector<aiVector3D> &point3d_array ) {
         SkipToken( tmp );
         ++numComponents;
     }
-    float x, y, z;
+    float x = 0.0f, y = 0.0f, z = 0.0f;
     if( 2 == numComponents ) {
         copyNextWord( m_buffer, BUFFERSIZE );
         x = ( float ) fast_atof( m_buffer );
